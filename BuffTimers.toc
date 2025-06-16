@@ -1,0 +1,27 @@
+## Interface: 110100
+## Title: BuffTimers
+## Version: 2025.06.16
+## Notes: Prints lists of persistent buffs on alts
+## Author: SpareSimian
+## IconTexture: Interface\Icons\spell_misc_emotionhappy
+## SavedVariables: buffTimersDB
+## AddonCompartmentFunc: buffTimers_OnAddonCompartmentClick
+## Category: Buffs & Debuffs
+## Category-deDE: Buffs & Debuffs
+## Category-esES: Beneficios y Perjuicios
+## Category-esMX: Beneficios y Perjuicios
+## Category-frFR: Améliorations et Affaiblissements
+## Category-itIT: Benefici e penalità
+## Category-koKR: 강화 및 약화 효과
+## Category-ptBR: Bônus e Penalidades
+## Category-ruRU: Баффы и дебаффы
+## Category-zhCN: 增益和减益
+## Category-zhTW: 增益與減益
+
+libs\LibStub\LibStub.lua
+libs\AceAddon-3.0\AceAddon-3.0.xml
+libs\AceConsole-3.0\AceConsole-3.0.xml
+libs\LibDBIcon-1.0\embeds.xml
+libs\LibDBIcon-1.0\libDBIcon-1.0\libDBIcon-1.0.lua
+
+Main.lua
