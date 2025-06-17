@@ -74,55 +74,116 @@ end
 
 -- initialize can be called at any event
 
-local playerNameKey -- "name - realm" used as key in persistent data
+-- keys for persistent data
+local playerNameKey
+local realmNameKey
 
 local function initialize()
    -- init all our data structures
-   if not playerNameKey then
-      local name, realm = UnitFullName("player")
-      playerNameKey = name .. " - " .. realm
-   end
+   playerNameKey, realmNameKey = UnitFullName("player")
+   if not playerNameKey or not realmNameKey then return end
+
    if not buffTimersDB then
       buffTimersDB = {}
    end
-   if not buffTimersDB[playerNameKey] then
-      buffTimersDB[playerNameKey] = {}
+
+   -- scrub old first generation data
+   if buffTimersDB.players then buffTimersDB.players = nil end
+
+   -- new structure is buffTimersDB.realms[realmNameKey].players[playerNameKey]
+
+   if not buffTimersDB.realms then
+      buffTimersDB.realms = {}
    end
+   if not buffTimersDB.realms[realmNameKey] then
+      buffTimersDB.realms[realmNameKey] = {}
+   end
+   if not buffTimersDB.realms[realmNameKey].players then
+      buffTimersDB.realms[realmNameKey].players = {}
+   end
+   if not buffTimersDB.realms[realmNameKey].players[playerNameKey] then
+      buffTimersDB.realms[realmNameKey].players[playerNameKey] = {}
+   end
+
    createMinimapButton("Interface\\Icons\\spell_misc_emotionhappy")
-   return true -- success
 end
 
-local function displayBuffTimers()
-   AuraUtil.ForEachAura("player", "HELPFUL", nil, function(name, icon, ...)
-      addon:Print(name, icon, ...)
-   end)
+local function displayTime(time)
+  local days = floor(time/86400)
+  local hours = floor(mod(time, 86400)/3600)
+  local minutes = floor(mod(time,3600)/60)
+  local seconds = floor(mod(time,60))
+  return format("%d:%02d:%02d:%02d",days,hours,minutes,seconds)
 end
 
 local function saveBuffs()
    -- iterate over buffs and save them to our persistent DB
+   local playerBuffs = {}
+   local now = GetTime()
+   AuraUtil.ForEachAura("player", "HELPFUL", nil, function(auraData)
+      local auraDataCopy = deepcopy(auraData)
+      if auraData.duration > 0 then
+         auraDataCopy.remaining = auraData.expirationTime - now
+      end
+      playerBuffs[auraDataCopy.spellId] = auraDataCopy
+   end, true)
+   buffTimersDB.realms[realmNameKey].players[playerNameKey] = playerBuffs
+end
+
+local function displayBuffTimers()
+   saveBuffs()
+   local now = GetTime()
+   AuraUtil.ForEachAura("player", "HELPFUL", nil, function(auraData)
+      if auraData.duration > 0 then
+         local remaining = auraData.expirationTime - now
+         addon:Print(auraData.name, displayTime(auraData.duration), displayTime(remaining))
+      end
+   end, true)
 end
 
 local function eventHandler(self, event, ...)
-   saveBuffs()
+   if "UNIT_AURA" == event then
+      saveBuffs()
+   end
 end
 
-local eventFrame = CreateFrame("Frame")
-eventFrame:SetScript("OnEvent", eventHandler)
-eventFrame:RegisterEvent("UNIT_AURA")
-eventFrame:RegisterEvent("PLAYER_LEAVING_WORLD") -- just before LOGOUT
+function addon:OnEnable()
+   initialize() -- OnInitialize is too early, realm from UnitFullName doesn't exist yet
+   addon.eventFrame = CreateFrame("Frame")
+   addon.eventFrame:SetScript("OnEvent", eventHandler)
+   addon.eventFrame:RegisterEvent("UNIT_AURA")
+   local version = C_AddOns.GetAddOnMetadata(addonName, "Version") -- from TOC file
+   addon:Print("Version " .. version)
+end
+
+function buffTimers_OnAddonCompartmentClick(addonName, mouseButton, button)
+   displayBuffTimers()
+end
 
 SLASH_BUFFTIMERS1="/bufftimers"
 SlashCmdList["BUFFTIMERS"] = function(msg)
    displayBuffTimers()
 end
 
-function addon:OnEnable()
-   initialize()
-   local version = C_AddOns.GetAddOnMetadata(addonName, "Version") -- from TOC file
-   addon:Print("Version " .. version)
-   saveBuffs()
+local function displayWheeTimers()
+   local count = 0
+   for realm, realmStuff in spairs(buffTimersDB.realms) do
+      for player, buffs in spairs(realmStuff.players) do
+         if buffs and buffs[46668] then
+            addon:Print(char, displayTime(buffs[46668].remaining))
+            count = count + 1
+         end
+      end
+   end
+   if 0 == count then addon:Print("No WHEE! buff on any character") end
 end
 
-function buffTimers_OnAddonCompartmentClick(addonName, mouseButton, button)
-   displayBuffTimers()
+SLASH_WHEETIMERS1="/wheetimers"
+SlashCmdList["WHEETIMERS"] = function(msg)
+   displayWheeTimers()
+end
+
+SLASH_WT1="/wt"
+SlashCmdList["WT"] = function(msg)
+   displayWheeTimers()
 end
