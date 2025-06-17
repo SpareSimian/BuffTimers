@@ -170,6 +170,7 @@ local function displayWheeTimers()
    for realm, realmStuff in spairs(buffTimersDB.realms) do
       for player, buffs in spairs(realmStuff.players) do
          if buffs and buffs[46668] then
+            local char = player .. " - " .. realm
             addon:Print(char, displayTime(buffs[46668].remaining))
             count = count + 1
          end
