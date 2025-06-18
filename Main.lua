@@ -136,7 +136,7 @@ local function displayBuffTimers()
    AuraUtil.ForEachAura("player", "HELPFUL", nil, function(auraData)
       if auraData.duration > 0 then
          local remaining = auraData.expirationTime - now
-         addon:Print(auraData.name, displayTime(auraData.duration), displayTime(remaining))
+         addon:Print(displayTime(remaining), "/", displayTime(auraData.duration), auraData.name)
       end
    end, true)
 end
@@ -170,8 +170,8 @@ local function displayWheeTimers()
    for realm, realmStuff in spairs(buffTimersDB.realms) do
       for player, buffs in spairs(realmStuff.players) do
          if buffs and buffs[46668] then
-            local char = player .. " - " .. realm
-            addon:Print(char, displayTime(buffs[46668].remaining))
+            -- the WHEE! buff only lasts an hour so trim the day and hour fields from the time display
+            addon:Print(string.sub(displayTime(buffs[46668].remaining), 6) .. " " .. player .. " - " .. realm)
             count = count + 1
          end
       end
