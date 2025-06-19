@@ -167,16 +167,37 @@ end
 
 local function displayWheeTimers()
    local count = 0
-   for realm, realmStuff in spairs(buffTimersDB.realms) do
-      for player, buffs in spairs(realmStuff.players) do
+   -- display sorted by time left
+   local timesLeft = {}
+   local noTimeLeft = {} -- known chars with no buff
+   local noTimeLeftCount = 0
+   for realm, realmStuff in pairs(buffTimersDB.realms) do
+      for player, buffs in pairs(realmStuff.players) do
+         local char = player .. " - " .. realm
          if buffs and buffs[46668] then
-            -- the WHEE! buff only lasts an hour so trim the day and hour fields from the time display
-            addon:Print(string.sub(displayTime(buffs[46668].remaining), 6) .. " " .. player .. " - " .. realm)
+            timesLeft[buffs[46668].remaining] = char
             count = count + 1
+         else
+            noTimeLeft[char] = 0
+            noTimeLeftCount = noTimeLeftCount + 1
          end
       end
    end
-   if 0 == count then addon:Print("No WHEE! buff on any character") end
+   if 0 == count then
+      addon:Print("No WHEE! buff on any character") 
+   else
+      for time, char in spairs(timesLeft) do
+         -- the WHEE! buff only lasts an hour so trim the day and hour fields from the time display
+         addon:Print(string.sub(displayTime(time), 6) .. " " .. char)
+      end
+      if noTimeLeftCount > 0 then
+         addon:Print("Characters with no buff:")
+         local prefix = " "
+         for char, _ in spairs(noTimeLeft) do
+            addon:Print(prefix .. char)
+         end
+      end
+   end
 end
 
 SLASH_WHEETIMERS1="/wheetimers"
