@@ -1,6 +1,6 @@
 ## Interface: 110107
 ## Title: BuffTimers
-## Version: 2025.06.19
+## Version: 2025.06.26
 ## Notes: Prints lists of persistent buffs on alts
 ## Author: SpareSimian
 ## IconTexture: Interface\Icons\spell_misc_emotionhappy
