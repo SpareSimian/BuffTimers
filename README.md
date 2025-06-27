@@ -1,4 +1,4 @@
-# BuffTimers, a World of Warcraft addon
+# WheeRemaining, a World of Warcraft addon
 
 ![WHEE! buff](spell_misc_emotionhappy.jpg)
 
