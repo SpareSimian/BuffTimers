@@ -6,13 +6,13 @@ local minimapButtonCreated = false
 
 local function createMinimapButton(iconPath)
    if minimapButtonCreated then return end
-   local prettyName = "Buff Timers"
+   local prettyName = "Whee Remaining"
    local miniButton = LibStub("LibDataBroker-1.1"):NewDataObject(addonName, {
       type = "data source",
       text = prettyName,
       icon = iconPath,
       OnClick = function(self, btn)
-         mslcDisplayMissing()
+         addon:displayWheeTimers()
       end,
       OnTooltipShow = function(tooltip)
          if not tooltip or not tooltip.AddLine then return end
@@ -20,7 +20,7 @@ local function createMinimapButton(iconPath)
       end,
    })
    local icon = LibStub("LibDBIcon-1.0", true)
-   icon:Register(addonName, miniButton, mslcDB)
+   icon:Register(addonName, miniButton, buffTimersDB)
    minimapButtonCreated = true
 end
 
@@ -130,7 +130,7 @@ local function saveBuffs()
    buffTimersDB.realms[realmNameKey].players[playerNameKey] = playerBuffs
 end
 
-local function displayBuffTimers()
+function addon:displayBuffTimers()
    saveBuffs()
    local now = GetTime()
    AuraUtil.ForEachAura("player", "HELPFUL", nil, function(auraData)
@@ -162,10 +162,10 @@ end
 
 SLASH_BUFFTIMERS1="/bufftimers"
 SlashCmdList["BUFFTIMERS"] = function(msg)
-   displayBuffTimers()
+   addon:displayBuffTimers()
 end
 
-local function displayWheeTimers()
+function addon:displayWheeTimers()
    local count = 0
    -- display sorted by time left
    local timesLeft = {}
@@ -202,10 +202,10 @@ end
 
 SLASH_WHEETIMERS1="/wheetimers"
 SlashCmdList["WHEETIMERS"] = function(msg)
-   displayWheeTimers()
+   addon:displayWheeTimers()
 end
 
 SLASH_WT1="/wt"
 SlashCmdList["WT"] = function(msg)
-   displayWheeTimers()
+   addon:displayWheeTimers()
 end
